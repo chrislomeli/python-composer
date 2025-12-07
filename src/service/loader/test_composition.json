@@ -1,0 +1,39 @@
+{
+  "name": "phrase_loop_example",
+  "ticks_per_quarter": 480,
+  "tempo_bpm": 120,
+  "tracks": {
+    "lead": [
+      {
+        "clip_id": 8,
+        "start_bar": 1,
+        "length_in_bars": 2,
+        "clip_bars": [
+          {
+            "bar_index": 1,
+            "velocity_curve": [
+              {"time": 0, "value": 90},
+              {"time": 4, "value": 100}
+            ],
+            "cc": {
+              "1": [{"time": 0, "value": 64}]
+            },
+            "pitch_bend_curve": [
+              {"time": 0, "value": 0},
+              {"time": 4, "value": 200}
+            ],
+            "aftertouch_curve": null,
+            "pedal_events": null,
+            "metadata": {"tag": "intro"}
+          }
+        ]
+      }
+    ],
+    "bass": [
+      {"clip_id": 10, "start_bar": 1, "length_in_bars": 2}
+    ]
+  },
+  "loops": [
+    {"start_bar": 5, "length_in_bars": 4, "repeat_count": 1}
+  ]
+}

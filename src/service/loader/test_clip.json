@@ -1,0 +1,80 @@
+[
+  {
+    "name": "lead-riff-intro",
+    "style": "latin",
+    "instrument": "lead-kazoo",
+    "tempo_bpm": 120,
+    "voice_bars": [
+      {
+        "bar_number": 1,
+        "notes": [
+          {"start_unit":0, "duration_units":8, "pitch_name":"C", "octave":4},
+          {"start_unit":8, "duration_units":8, "pitch_name":"E", "octave":4},
+          {"start_unit":16, "duration_units":8, "pitch_name":"G", "octave":4},
+          {"start_unit":24, "duration_units":8, "is_rest":true}
+        ]
+      },
+      {
+        "bar_number": 2,
+        "notes": [
+          {"start_unit":0, "duration_units":8, "pitch_name":"D", "octave":4},
+          {"start_unit":8, "duration_units":4, "pitch_name":"F", "octave":4},
+          {"start_unit":16, "duration_units":4, "pitch_name":"A", "octave":4},
+          {"start_unit":24, "duration_units":16, "is_rest":true}
+        ]
+      }
+    ]
+  },
+  {
+    "name": "lead-riff-bridge",
+    "style": "latin",
+    "instrument": "lead-kazoo",
+    "tempo_bpm": 120,
+    "voice_bars": [
+      {
+        "bar_number": 1,
+        "notes": [
+          {"start_unit":0, "duration_units":8, "pitch_name":"C", "octave":4},
+          {"start_unit":8, "duration_units":8, "pitch_name":"C", "octave":4},
+          {"start_unit":16, "duration_units":8, "pitch_name":"C", "octave":4},
+          {"start_unit":24, "duration_units":8, "is_rest":true}
+        ]
+      },
+      {
+        "bar_number": 2,
+        "notes": [
+          {"start_unit":0, "duration_units":8, "pitch_name":"C", "octave":3},
+          {"start_unit":8, "duration_units":4, "pitch_name":"C", "octave":3},
+          {"start_unit":16, "duration_units":4, "pitch_name":"C", "octave":3},
+          {"start_unit":24, "duration_units":16, "is_rest":true}
+        ]
+      }
+    ]
+  },
+    {
+    "name": "bas-riff",
+    "style": "latin",
+    "instrument": "bass-kazoo",
+    "tempo_bpm": 120,
+    "voice_bars": [
+      {
+        "bar_number": 1,
+        "notes": [
+          {"start_unit":0, "duration_units":8, "pitch_name":"C", "octave":3},
+          {"start_unit":8, "duration_units":8, "pitch_name":"A#", "octave":2},
+          {"start_unit":16, "duration_units":8, "pitch_name":"C", "octave":4},
+          {"start_unit":24, "duration_units":8, "is_rest":true}
+        ]
+      },
+      {
+        "bar_number": 2,
+        "notes": [
+          {"start_unit":0, "duration_units":8, "pitch_name":"C", "octave":3},
+          {"start_unit":8, "duration_units":4, "is_rest":true},
+          {"start_unit":16, "duration_units":4, "pitch_name":"C", "octave":3},
+          {"start_unit":24, "duration_units":16, "is_rest":true}
+        ]
+      }
+    ]
+  }
+]
