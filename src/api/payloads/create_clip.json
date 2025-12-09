@@ -1,0 +1,34 @@
+{
+  "clip_id": 8,
+  "name": "lead-riff-intro",
+  "track_name": "lead",
+  "bars": [
+    {
+      "bar_index": 0,
+      "items": [
+        { "note": "C4", "duration": "quarter" },
+        { "note": "E4", "duration": "quarter" },
+        { "note": "G3", "duration": "quarter" },
+        { "rest": "quarter" }
+      ],
+      "expression": {
+        "velocity_curve": [
+          { "time": 0, "value": 90 },
+          { "time": 4, "value": 100 }
+        ]
+      }
+    },
+    {
+      "bar_index": 1,
+      "items": [
+        { "note": "D4", "duration": "quarter" },
+        { "note": "F4", "duration": "quarter" },
+        { "note": "A4", "duration": "quarter" },
+        { "rest": "quarter" }
+      ],
+      "expression": {
+        "metadata": { "tag": "intro" }
+      }
+    }
+  ]
+}
