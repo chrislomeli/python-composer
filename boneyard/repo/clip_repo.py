@@ -1,7 +1,7 @@
 # boneyard/repo/clip_repo.py
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
-from src.repo.models import ClipModel
+
 
 class ClipRepo:
     def __init__(self, session: AsyncSession):

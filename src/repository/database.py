@@ -1,10 +1,17 @@
 # database.py
 # Async database connection pool and session management
+import asyncio
 
+from pydantic import BaseModel
+from sqlalchemy import MetaData
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine, AsyncSession, async_sessionmaker
 from contextlib import asynccontextmanager
 from typing import Optional, AsyncGenerator
 import os
+from dotenv import load_dotenv
+
+load_dotenv()  # reads .env and populates os.
+
 
 
 class Database:
@@ -13,9 +20,12 @@ class Database:
     Singleton pattern for shared connection pool across the application.
     """
     
-    def __init__(self, connection_string: Optional[str] = None, echo: bool = False):
+    def __init__(self, connection_string: Optional[str] = None, bootstrap_db: bool = False, echo: bool = False):
         """
         Initialize async database connection pool.
+
+        if bootstrap_db is True, will create the database if it doesn't exist.
+
         
         Args:
             connection_string: SQLAlchemy async connection string. 
@@ -55,6 +65,7 @@ class Database:
             class_=AsyncSession,
             expire_on_commit=False
         )
+
     
     @asynccontextmanager
     async def session(self) -> AsyncGenerator[AsyncSession, None]:
