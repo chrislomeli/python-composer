@@ -58,3 +58,31 @@ class ClipRepository(BaseRepository):
         result = await session.execute(stmt)
         results = result.fetchall()
         return [dict(row._mapping) for row in results]
+    
+    async def find_by_tags(self, session: AsyncSession, tags: List[str]) -> List[Dict[str, Any]]:
+        """
+        Find clips that have any of the specified tags.
+        
+        Args:
+            session: SQLAlchemy async session
+            tags: List of tags to search for
+        
+        Returns:
+            List of clip dictionaries
+        """
+        from sqlalchemy import func, cast, String
+        
+        stmt = select(self.table).where(
+            self.table.c.tags.isnot(None)
+        )
+        result = await session.execute(stmt)
+        results = result.fetchall()
+        
+        matching_clips = []
+        for row in results:
+            clip_dict = dict(row._mapping)
+            clip_tags = clip_dict.get("tags", []) or []
+            if any(tag in clip_tags for tag in tags):
+                matching_clips.append(clip_dict)
+        
+        return matching_clips

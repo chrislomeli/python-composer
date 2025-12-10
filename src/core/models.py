@@ -71,6 +71,7 @@ class Clip(BaseModel):
     id: Optional[int] = None
     name: str
     track_name: Optional[str] = None
+    tags: Optional[List[str]] = None
     bars: List[ClipBar] = Field(default_factory=list)
 
 

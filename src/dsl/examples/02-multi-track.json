@@ -1,0 +1,88 @@
+{
+  "project": {
+    "name": "multi_track_example",
+    "ticks_per_quarter": 480,
+
+    "tempo_map": [
+      {"bar": 1, "tempo_bpm": 120}
+    ],
+    "meter_map": [
+      {"bar": 1, "numerator": 4, "denominator": 4}
+    ],
+    "key_map": [
+      {"bar": 1, "key": "C", "mode": "major"}
+    ],
+
+    "tracks": {
+      "melody": {
+        "instrument": {
+          "name": "piano",
+          "midi_channel": 0
+        },
+        "clips": [
+          {
+            "clip_instance_id": "melody_verse",
+            "clip_id": 1,
+            "start_bar": 1,
+            "length_bars": 2
+          },
+          {
+            "clip_instance_id": "melody_chorus",
+            "clip_id": 2,
+            "start_bar": 3,
+            "length_bars": 2
+          }
+        ]
+      },
+
+      "bass": {
+        "instrument": {
+          "name": "bass",
+          "midi_channel": 1
+        },
+        "clips": [
+          {
+            "clip_instance_id": "bass_line",
+            "clip_id": 3,
+            "start_bar": 1,
+            "length_bars": 4
+          }
+        ]
+      }
+    },
+
+    "clip_library": [
+      {
+        "clip_id": 1,
+        "name": "melody-verse",
+        "notes": [
+          {"pitch": 60, "start_beat": 0.0, "duration_beats": 2.0},
+          {"pitch": 62, "start_beat": 2.0, "duration_beats": 2.0},
+          {"pitch": 64, "start_beat": 4.0, "duration_beats": 2.0},
+          {"pitch": 65, "start_beat": 6.0, "duration_beats": 2.0}
+        ]
+      },
+      {
+        "clip_id": 2,
+        "name": "melody-chorus",
+        "notes": [
+          {"pitch": 67, "start_beat": 0.0, "duration_beats": 1.0},
+          {"pitch": 65, "start_beat": 1.0, "duration_beats": 1.0},
+          {"pitch": 64, "start_beat": 2.0, "duration_beats": 1.0},
+          {"pitch": 62, "start_beat": 3.0, "duration_beats": 1.0},
+          {"pitch": 60, "start_beat": 4.0, "duration_beats": 4.0}
+        ]
+      },
+      {
+        "clip_id": 3,
+        "name": "bass-pattern",
+        "notes": [
+          {"pitch": 36, "start_beat": 0.0, "duration_beats": 1.0},
+          {"is_rest": true, "start_beat": 1.0, "duration_beats": 1.0},
+          {"pitch": 36, "start_beat": 2.0, "duration_beats": 1.0},
+          {"is_rest": true, "start_beat": 3.0, "duration_beats": 1.0}
+        ]
+      }
+    ]
+  }
+}

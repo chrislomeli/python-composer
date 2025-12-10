@@ -1,0 +1,46 @@
+{
+  "project": {
+    "name": "simple_melody_example",
+    "ticks_per_quarter": 480,
+
+    "tempo_map": [
+      {"bar": 1, "tempo_bpm": 120}
+    ],
+    "meter_map": [
+      {"bar": 1, "numerator": 4, "denominator": 4}
+    ],
+    "key_map": [
+      {"bar": 1, "key": "C", "mode": "major"}
+    ],
+
+    "tracks": {
+      "melody": {
+        "instrument": {
+          "name": "piano",
+          "midi_channel": 0
+        },
+        "clips": [
+          {
+            "clip_instance_id": "melody_bar1",
+            "clip_id": 1,
+            "start_bar": 1,
+            "length_bars": 1
+          }
+        ]
+      }
+    },
+
+    "clip_library": [
+      {
+        "clip_id": 1,
+        "name": "simple-scale",
+        "notes": [
+          {"pitch": 60, "start_beat": 0.0, "duration_beats": 1.0},
+          {"pitch": 62, "start_beat": 1.0, "duration_beats": 1.0},
+          {"pitch": 64, "start_beat": 2.0, "duration_beats": 1.0},
+          {"pitch": 65, "start_beat": 3.0, "duration_beats": 1.0}
+        ]
+      }
+    ]
+  }
+}

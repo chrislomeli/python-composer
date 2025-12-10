@@ -1,0 +1,213 @@
+{
+  "project": {
+    "name": "complete_song_structure",
+    "ticks_per_quarter": 480,
+
+    "tempo_map": [
+      {"bar": 1, "tempo_bpm": 100},
+      {"bar": 17, "tempo_bpm": 120}
+    ],
+    "meter_map": [
+      {"bar": 1, "numerator": 4, "denominator": 4}
+    ],
+    "key_map": [
+      {"bar": 1, "key": "C", "mode": "major"},
+      {"bar": 17, "key": "F", "mode": "major"}
+    ],
+
+    "tracks": {
+      "melody": {
+        "instrument": {
+          "name": "piano",
+          "midi_channel": 0
+        },
+        "clips": [
+          {"clip_instance_id": "intro", "clip_id": 1, "start_bar": 1, "length_bars": 4},
+          {"clip_instance_id": "verse_1", "clip_id": 2, "start_bar": 5, "length_bars": 4},
+          {"clip_instance_id": "chorus_1", "clip_id": 3, "start_bar": 9, "length_bars": 4},
+          {"clip_instance_id": "verse_2", "clip_id": 2, "start_bar": 13, "length_bars": 4, "bar_overrides": [
+            {
+              "bar_index": 3,
+              "velocity_curve": [
+                {"time": 0.0, "value": 90},
+                {"time": 4.0, "value": 110}
+              ]
+            }
+          ]},
+          {"clip_instance_id": "chorus_2", "clip_id": 3, "start_bar": 17, "length_bars": 4},
+          {"clip_instance_id": "bridge", "clip_id": 4, "start_bar": 21, "length_bars": 4},
+          {"clip_instance_id": "chorus_3", "clip_id": 3, "start_bar": 25, "length_bars": 4},
+          {"clip_instance_id": "outro", "clip_id": 5, "start_bar": 29, "length_bars": 4}
+        ]
+      },
+
+      "bass": {
+        "instrument": {
+          "name": "electric-bass",
+          "midi_channel": 1
+        },
+        "clips": [
+          {"clip_instance_id": "bass_intro", "clip_id": 10, "start_bar": 1, "length_bars": 4},
+          {"clip_instance_id": "bass_verse", "clip_id": 11, "start_bar": 5, "length_bars": 4},
+          {"clip_instance_id": "bass_chorus", "clip_id": 12, "start_bar": 9, "length_bars": 4},
+          {"clip_instance_id": "bass_verse_2", "clip_id": 11, "start_bar": 13, "length_bars": 4},
+          {"clip_instance_id": "bass_chorus_2", "clip_id": 12, "start_bar": 17, "length_bars": 4},
+          {"clip_instance_id": "bass_bridge", "clip_id": 13, "start_bar": 21, "length_bars": 4},
+          {"clip_instance_id": "bass_chorus_3", "clip_id": 12, "start_bar": 25, "length_bars": 4},
+          {"clip_instance_id": "bass_outro", "clip_id": 10, "start_bar": 29, "length_bars": 4}
+        ]
+      },
+
+      "pads": {
+        "instrument": {
+          "name": "string-pad",
+          "midi_channel": 2
+        },
+        "clips": [
+          {"clip_instance_id": "pad_verse", "clip_id": 20, "start_bar": 5, "length_bars": 8},
+          {"clip_instance_id": "pad_chorus", "clip_id": 21, "start_bar": 9, "length_bars": 16},
+          {"clip_instance_id": "pad_outro", "clip_id": 22, "start_bar": 29, "length_bars": 4}
+        ]
+      }
+    },
+
+    "loops": [
+      {
+        "start_bar": 9,
+        "length_bars": 4,
+        "repeat_count": 0
+      }
+    ],
+
+    "clip_library": [
+      {
+        "clip_id": 1,
+        "name": "intro-melody",
+        "notes": [
+          {"pitch": 60, "start_beat": 0.0, "duration_beats": 4.0},
+          {"pitch": 62, "start_beat": 4.0, "duration_beats": 2.0},
+          {"pitch": 64, "start_beat": 6.0, "duration_beats": 2.0},
+          {"pitch": 65, "start_beat": 8.0, "duration_beats": 8.0}
+        ]
+      },
+      {
+        "clip_id": 2,
+        "name": "verse-melody",
+        "notes": [
+          {"pitch": 60, "start_beat": 0.0, "duration_beats": 1.0},
+          {"pitch": 62, "start_beat": 1.0, "duration_beats": 1.0},
+          {"pitch": 64, "start_beat": 2.0, "duration_beats": 1.0},
+          {"is_rest": true, "start_beat": 3.0, "duration_beats": 1.0},
+          {"pitch": 62, "start_beat": 4.0, "duration_beats": 2.0},
+          {"pitch": 60, "start_beat": 6.0, "duration_beats": 2.0},
+          {"pitch": 59, "start_beat": 8.0, "duration_beats": 4.0},
+          {"is_rest": true, "start_beat": 12.0, "duration_beats": 4.0}
+        ]
+      },
+      {
+        "clip_id": 3,
+        "name": "chorus-melody",
+        "notes": [
+          {"pitch": 67, "start_beat": 0.0, "duration_beats": 2.0},
+          {"pitch": 65, "start_beat": 2.0, "duration_beats": 2.0},
+          {"pitch": 64, "start_beat": 4.0, "duration_beats": 2.0},
+          {"pitch": 62, "start_beat": 6.0, "duration_beats": 2.0},
+          {"pitch": 64, "start_beat": 8.0, "duration_beats": 2.0},
+          {"pitch": 65, "start_beat": 10.0, "duration_beats": 2.0},
+          {"pitch": 67, "start_beat": 12.0, "duration_beats": 4.0}
+        ]
+      },
+      {
+        "clip_id": 4,
+        "name": "bridge-melody",
+        "notes": [
+          {"pitch": 72, "start_beat": 0.0, "duration_beats": 1.0},
+          {"pitch": 71, "start_beat": 1.0, "duration_beats": 1.0},
+          {"pitch": 69, "start_beat": 2.0, "duration_beats": 1.0},
+          {"pitch": 67, "start_beat": 3.0, "duration_beats": 1.0},
+          {"pitch": 65, "start_beat": 4.0, "duration_beats": 2.0},
+          {"pitch": 64, "start_beat": 6.0, "duration_beats": 2.0},
+          {"pitch": 62, "start_beat": 8.0, "duration_beats": 4.0},
+          {"pitch": 60, "start_beat": 12.0, "duration_beats": 4.0}
+        ]
+      },
+      {
+        "clip_id": 5,
+        "name": "outro-melody",
+        "notes": [
+          {"pitch": 60, "start_beat": 0.0, "duration_beats": 2.0},
+          {"pitch": 59, "start_beat": 2.0, "duration_beats": 2.0},
+          {"pitch": 57, "start_beat": 4.0, "duration_beats": 2.0},
+          {"pitch": 55, "start_beat": 6.0, "duration_beats": 2.0},
+          {"pitch": 60, "start_beat": 8.0, "duration_beats": 8.0}
+        ]
+      },
+      {
+        "clip_id": 10,
+        "name": "bass-sparse",
+        "notes": [
+          {"pitch": 36, "start_beat": 0.0, "duration_beats": 1.0},
+          {"is_rest": true, "start_beat": 1.0, "duration_beats": 3.0}
+        ]
+      },
+      {
+        "clip_id": 11,
+        "name": "bass-walking",
+        "notes": [
+          {"pitch": 36, "start_beat": 0.0, "duration_beats": 1.0},
+          {"pitch": 38, "start_beat": 1.0, "duration_beats": 1.0},
+          {"pitch": 40, "start_beat": 2.0, "duration_beats": 1.0},
+          {"pitch": 41, "start_beat": 3.0, "duration_beats": 1.0}
+        ]
+      },
+      {
+        "clip_id": 12,
+        "name": "bass-driving",
+        "notes": [
+          {"pitch": 36, "start_beat": 0.0, "duration_beats": 0.5},
+          {"pitch": 36, "start_beat": 0.5, "duration_beats": 0.5},
+          {"pitch": 36, "start_beat": 1.0, "duration_beats": 1.0},
+          {"pitch": 38, "start_beat": 2.0, "duration_beats": 0.5},
+          {"pitch": 38, "start_beat": 2.5, "duration_beats": 0.5},
+          {"pitch": 38, "start_beat": 3.0, "duration_beats": 1.0}
+        ]
+      },
+      {
+        "clip_id": 13,
+        "name": "bass-bridge",
+        "notes": [
+          {"pitch": 48, "start_beat": 0.0, "duration_beats": 2.0},
+          {"pitch": 46, "start_beat": 2.0, "duration_beats": 2.0}
+        ]
+      },
+      {
+        "clip_id": 20,
+        "name": "pad-verse",
+        "notes": [
+          {"pitch": 48, "start_beat": 0.0, "duration_beats": 8.0},
+          {"pitch": 52, "start_beat": 0.0, "duration_beats": 8.0},
+          {"pitch": 55, "start_beat": 0.0, "duration_beats": 8.0}
+        ]
+      },
+      {
+        "clip_id": 21,
+        "name": "pad-chorus",
+        "notes": [
+          {"pitch": 55, "start_beat": 0.0, "duration_beats": 4.0},
+          {"pitch": 59, "start_beat": 0.0, "duration_beats": 4.0},
+          {"pitch": 62, "start_beat": 0.0, "duration_beats": 4.0}
+        ]
+      },
+      {
+        "clip_id": 22,
+        "name": "pad-outro",
+        "notes": [
+          {"pitch": 48, "start_beat": 0.0, "duration_beats": 16.0},
+          {"pitch": 52, "start_beat": 0.0, "duration_beats": 16.0},
+          {"pitch": 55, "start_beat": 0.0, "duration_beats": 16.0},
+          {"pitch": 60, "start_beat": 0.0, "duration_beats": 16.0}
+        ]
+      }
+    ]
+  }
+}

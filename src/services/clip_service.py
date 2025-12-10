@@ -71,7 +71,8 @@ class ClipService:
             # 1. Insert clip
             clip_data = {
                 "name": dsl_clip["name"],
-                "track_name": dsl_clip.get("track_name")
+                "track_name": dsl_clip.get("track_name"),
+                "tags": dsl_clip.get("tags")
             }
             clip_id = await self.clip_repo.insert(session, clip_data)
             
@@ -135,51 +136,29 @@ class ClipService:
             clip["bars"] = bars
             return clip
     
-    async def find_clips_by_tag(self, tag: str) -> List[ClipModel]:
+    async def find_clips_by_tags(self, tags: List[str]) -> List[Dict[str, Any]]:
         """
-        Find clips by metadata tag.
+        Find clips by tags.
         
-        Searches for clips that have bars with metadata containing the specified tag.
+        Searches for clips that have any of the specified tags.
         
         Args:
-            tag: Tag to search for
+            tags: List of tags to search for
         
         Returns:
-            List of Pydantic Clip objects
+            List of clip dictionaries with full bars and notes
         """
         async with self.db.session() as session:
-            # Find all clip bars with metadata containing the tag
-            from sqlalchemy import select
-            from src.core.schema import clip_bars, clips
+            clip_dicts = await self.clip_repo.find_by_tags(session, tags)
             
-            stmt = (
-                select(clips.c.id)
-                .select_from(
-                    clips.join(clip_bars, clips.c.id == clip_bars.c.clip_id)
-                )
-                .where(
-                    clip_bars.c.metadata.isnot(None)
-                )
-                .distinct()
-            )
+            # Get full clip data with bars and notes
+            full_clips = []
+            for clip_dict in clip_dicts:
+                full_clip = await self.get_clip_with_bars_and_notes(clip_dict["id"])
+                if full_clip:
+                    full_clips.append(full_clip)
             
-            result = await session.execute(stmt)
-            results = result.fetchall()
-            clip_ids = [row[0] for row in results]
-            
-            # Filter by tag in metadata (JSON field)
-            matching_clips = []
-            for clip_id in clip_ids:
-                clip_data = await self.get_clip_with_bars_and_notes(clip_id)
-                if clip_data:
-                    # Check if any bar has the tag in metadata
-                    for bar in clip_data.get("bars", []):
-                        metadata = bar.get("metadata", {})
-                        if metadata and tag in str(metadata.get("tag", "")):
-                            matching_clips.append(self._dict_to_clip_model(clip_data))
-                            break
-            
-            return matching_clips
+            return full_clips
     
     async def find_clips_by_name(self, name_pattern: str) -> List[Dict[str, Any]]:
         """
@@ -239,5 +218,6 @@ class ClipService:
             id=clip_dict.get("id"),
             name=clip_dict["name"],
             track_name=clip_dict.get("track_name"),
+            tags=clip_dict.get("tags"),
             bars=bars
         )

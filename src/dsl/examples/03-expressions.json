@@ -1,0 +1,97 @@
+{
+  "project": {
+    "name": "expressions_example",
+    "ticks_per_quarter": 480,
+
+    "tempo_map": [
+      {"bar": 1, "tempo_bpm": 120}
+    ],
+    "meter_map": [
+      {"bar": 1, "numerator": 4, "denominator": 4}
+    ],
+    "key_map": [
+      {"bar": 1, "key": "C", "mode": "major"}
+    ],
+
+    "tracks": {
+      "lead": {
+        "instrument": {
+          "name": "synth-lead",
+          "midi_channel": 0
+        },
+        "clips": [
+          {
+            "clip_instance_id": "lead_intro",
+            "clip_id": 1,
+            "start_bar": 1,
+            "length_bars": 2,
+            "bar_overrides": [
+              {
+                "bar_index": 0,
+                "velocity_curve": [
+                  {"time": 0.0, "value": 70},
+                  {"time": 2.0, "value": 100},
+                  {"time": 4.0, "value": 70}
+                ],
+                "cc_lanes": {
+                  "1": [
+                    {"time": 0.0, "value": 0},
+                    {"time": 2.0, "value": 64},
+                    {"time": 4.0, "value": 0}
+                  ],
+                  "74": [
+                    {"time": 0.0, "value": 30},
+                    {"time": 2.0, "value": 100},
+                    {"time": 4.0, "value": 30}
+                  ]
+                },
+                "pitch_bend_curve": [
+                  {"time": 0.0, "value": 0}
+                ],
+                "metadata": {
+                  "section": "intro",
+                  "feel": "building"
+                }
+              },
+              {
+                "bar_index": 1,
+                "velocity_curve": [
+                  {"time": 0.0, "value": 100},
+                  {"time": 4.0, "value": 110}
+                ],
+                "cc_lanes": {
+                  "1": [
+                    {"time": 0.0, "value": 64},
+                    {"time": 4.0, "value": 100}
+                  ]
+                },
+                "pitch_bend_curve": [
+                  {"time": 0.0, "value": 0},
+                  {"time": 3.5, "value": 0},
+                  {"time": 4.0, "value": 200}
+                ],
+                "metadata": {
+                  "section": "intro",
+                  "feel": "climax"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+
+    "clip_library": [
+      {
+        "clip_id": 1,
+        "name": "expressive-phrase",
+        "notes": [
+          {"pitch": 60, "start_beat": 0.0, "duration_beats": 2.0},
+          {"pitch": 64, "start_beat": 2.0, "duration_beats": 2.0},
+          {"pitch": 67, "start_beat": 4.0, "duration_beats": 2.0},
+          {"pitch": 72, "start_beat": 6.0, "duration_beats": 2.0}
+        ]
+      }
+    ]
+  }
+}

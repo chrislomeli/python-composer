@@ -1,6 +1,6 @@
 # test_clip_service.py
 # Integration tests for ClipService
-
+import json
 import sys
 from pathlib import Path
 import asyncio
@@ -63,6 +63,7 @@ async def test_create_clip_from_dsl():
     
     # Retrieve clip
     clip = await service.get_clip_with_bars_and_notes(clip_id)
+    clip_str = json.dumps(clip, indent=2)
     assert clip is not None
     assert clip["name"] == "test-clip"
     assert clip["track_name"] == "lead"
