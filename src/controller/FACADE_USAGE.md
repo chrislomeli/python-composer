@@ -6,17 +6,26 @@ The `OSCFacade` provides a high-level Pydantic-based interface for working with 
 
 ## Features Implemented
 
-### 1. SML to DSL Conversion
+### 1. Natural Language to SML (LangGraph)
+Convert natural language prompts to SML clip format using LangGraph + OpenAI (proxies through `clip_graph.py`).
+
+### 2. SML to DSL Conversion
 Convert SML/SMIL format to spec-compliant DSL format (proxies through `sml_ast.py`).
 
-### 2. Load DSL into Database
+### 3. Load DSL into Database
 Load any DSL JSON file or dict into the database, creating clips and compositions.
 
-### 3. Search Clips by Tags
+### 4. Search Clips by Tags
 Retrieve clips by tag search and return valid DSL format.
 
-### 4. Export Composition to DSL
+### 5. Export Composition to DSL
 Retrieve a whole composition from database by ID and return complete DSL project.
+
+### 6. Complete NL → DB Pipeline
+One-step natural language clip generation directly to database.
+
+### 7. Playback Workflows
+Preview clips before storing to database (SML → DSL → Play).
 
 ## Usage Examples
 
@@ -27,14 +36,102 @@ from src.controller.osc_facade import (
     OSCFacade,
     DSLLoadConfig,
     ClipSearchRequest,
-    DSLProjectModel
+    DSLProjectModel,
+    NLToSMLRequest,
+    PlaybackConfig
 )
 
 # Initialize facade
 facade = OSCFacade()
 ```
 
-### 1. Convert SML/SMIL to DSL
+### 1. Natural Language to SML (LangGraph)
+
+```python
+# Generate SML clip from natural language using LangGraph + OpenAI
+# Requires: OPENAI_API_KEY environment variable
+
+from src.controller.osc_facade import NLToSMLRequest
+
+request = NLToSMLRequest(text="Create a 2-bar ascending C major scale, quarter notes")
+sml_response = await facade.natural_language_clip_to_sml(request)
+
+print(f"Generated SML clip: {sml_response.sml['name']}")
+print(f"Bars: {len(sml_response.sml['bars'])}")
+
+# The SML can then be converted to DSL or stored directly
+dsl_clip = facade.sml_to_dsl_clip(sml_response.sml)
+```
+
+### 2. Rapid Iteration Workflow: NL → Play (Preview Before Storing)
+
+```python
+# The main workflow: Generate and play immediately, store only if you like it
+# Requires: OPENAI_API_KEY and a SoundFont file
+
+request = NLToSMLRequest(text="Create a jazzy bass line in F, 4 bars, eighth notes")
+config = PlaybackConfig(
+    sf2_path="FluidR3_GM.sf2",  # Path to your SoundFont
+    bpm=120,
+    loop=False
+)
+
+# Generate, play, and get the SML back
+sml_response = await facade.play_clip_from_nl(request, config)
+
+print(f"Played clip: {sml_response.sml['name']}")
+
+# If you like it, store it to database:
+dsl_clip = facade.sml_to_dsl_clip(sml_response.sml)
+clip_id = await facade.clip_service.create_clip_from_dsl(dsl_clip)
+print(f"Stored with ID: {clip_id}")
+```
+
+### 3. Play Clip from SML (Without NL Generation)
+
+```python
+# If you already have SML (e.g., from a file or manual creation)
+sml_clip = {
+    "name": "my-riff",
+    "bars": [
+        {
+            "bar_index": 0,
+            "items": [
+                {"note": "C4", "duration": "quarter"},
+                {"note": "E4", "duration": "quarter"},
+                {"note": "G4", "duration": "half"}
+            ]
+        }
+    ]
+}
+
+config = PlaybackConfig(sf2_path="FluidR3_GM.sf2", bpm=120)
+await facade.play_clip_from_sml(sml_clip, config)
+```
+
+### 4. Play Clip from Database
+
+```python
+# Play a clip that's already stored in the database
+config = PlaybackConfig(sf2_path="FluidR3_GM.sf2", bpm=140, loop=True)
+await facade.play_clip(clip_id=1, config=config)
+```
+
+### 5. Complete NL → DB Pipeline (Store Without Playing)
+
+```python
+# Generate clip from natural language and store directly to database
+request = NLToSMLRequest(text="Create a C major scale, quarter notes")
+clip_id = await facade.natural_language_clip_to_db(request)
+
+print(f"Created clip with ID: {clip_id}")
+
+# Retrieve it back
+clip_dsl = await facade.clip_to_dsl(clip_id)
+print(f"Clip name: {clip_dsl['name']}")
+```
+
+### 6. Convert SML/SMIL to DSL
 
 ```python
 # Convert SMIL clip to DSL format
@@ -90,11 +187,11 @@ dsl_composition = facade.sml_to_dsl_composition(sml_project)
 print(f"Converted composition: {dsl_composition['name']}")
 ```
 
-### 2. Load DSL from File
+### 7. Load DSL from File
 
 ```python
 # Load from file path
-config = DSLLoadConfig(path="src/dsl/examples/02-multi-track.json")
+config = DSLLoadConfig(path="../dsl/examples/02-multi-track.json")
 result = await facade.load_dsl_to_db(config)
 
 print(f"Loaded composition: {result.composition_name}")
@@ -102,7 +199,7 @@ print(f"Composition ID: {result.composition_id}")
 print(f"Created {len(result.clip_ids)} clips: {result.clip_ids}")
 ```
 
-### 3. Load DSL from Dict
+### 8. Load DSL from Dict
 
 ```python
 dsl_json = {
@@ -143,7 +240,7 @@ config = DSLLoadConfig(dsl_json=dsl_json)
 result = await facade.load_dsl_to_db(config)
 ```
 
-### 4. Search Clips by Tags
+### 9. Search Clips by Tags
 
 ```python
 # Search by tags
@@ -156,7 +253,7 @@ for clip in response.clips:
     print(f"  Notes: {len(clip['notes'])}")
 ```
 
-### 5. Search Clips by Name Pattern
+### 10. Search Clips by Name Pattern
 
 ```python
 # Search by name pattern (SQL LIKE syntax)
@@ -167,7 +264,7 @@ for clip in response.clips:
     print(f"Found clip: {clip['name']}")
 ```
 
-### 6. Get Single Clip as DSL
+### 11. Get Single Clip as DSL
 
 ```python
 # Get specific clip by ID
@@ -177,7 +274,7 @@ print(f"Clip: {clip_dsl['name']}")
 print(f"Notes: {clip_dsl['notes']}")
 ```
 
-### 7. Export Composition to DSL
+### 12. Export Composition to DSL
 
 ```python
 # Export full composition back to DSL format
@@ -195,38 +292,69 @@ with open("exported_composition.json", "w") as f:
     json.dump({"project": project}, f, indent=2)
 ```
 
-### 8. Complete Workflow: Load, Search, Export
+### 13. Complete Workflow: NL → Play → Store → Export
 
 ```python
 import asyncio
 
-async def complete_workflow():
+async def rapid_iteration_workflow():
+    """The main workflow: Generate, play, iterate, then store."""
     facade = OSCFacade()
     
-    # 1. Load DSL into database
-    print("Loading DSL...")
-    config = DSLLoadConfig(path="src/dsl/examples/02-multi-track.json")
-    load_result = await facade.load_dsl_to_db(config)
-    print(f"✓ Loaded composition {load_result.composition_id}")
+    # 1. Generate and play clips from natural language
+    print("Generating and playing clips...")
+    playback_config = PlaybackConfig(sf2_path="FluidR3_GM.sf2", bpm=120)
     
-    # 2. Search for clips by tag
-    print("\nSearching for clips with 'melody' tag...")
-    search_request = ClipSearchRequest(tags=["melody"])
+    # Try different ideas
+    ideas = [
+        "Create a funky bass line in E, 2 bars",
+        "Create a melodic piano riff in C major, 4 bars",
+        "Create a drum pattern with kick and snare"
+    ]
+    
+    stored_clips = []
+    for idea in ideas:
+        print(f"\n🎵 Trying: {idea}")
+        request = NLToSMLRequest(text=idea)
+        
+        # Generate and play
+        sml_response = await facade.play_clip_from_nl(request, playback_config)
+        
+        # Simulate user decision (in real app, this would be user input)
+        store_it = True  # User liked it!
+        
+        if store_it:
+            # Store to database
+            dsl_clip = facade.sml_to_dsl_clip(sml_response.sml)
+            clip_id = await facade.clip_service.create_clip_from_dsl(dsl_clip)
+            stored_clips.append(clip_id)
+            print(f"✓ Stored clip {clip_id}")
+        else:
+            print("✗ Discarded")
+    
+    # 2. Search for stored clips
+    print(f"\n📂 Searching for clips...")
+    search_request = ClipSearchRequest(tags=["bass", "melody"])
     search_result = await facade.search_clips(search_request)
     print(f"✓ Found {len(search_result.clips)} clips")
     
-    # 3. Export composition back to DSL
-    print("\nExporting composition to DSL...")
-    dsl_project = await facade.composition_to_dsl(load_result.composition_id)
-    print(f"✓ Exported: {dsl_project.project['name']}")
-    print(f"  Tracks: {len(dsl_project.project['tracks'])}")
-    print(f"  Clips: {len(dsl_project.project['clip_library'])}")
+    # 3. Play a stored clip from database
+    if stored_clips:
+        print(f"\n▶️  Playing stored clip {stored_clips[0]}...")
+        await facade.play_clip(stored_clips[0], playback_config)
     
-    return dsl_project
+    # 4. Export to DSL file
+    print("\n💾 Exporting clips to DSL...")
+    for clip_id in stored_clips:
+        dsl_clip = await facade.clip_to_dsl(clip_id)
+        filename = f"exported_clip_{clip_id}.json"
+        with open(filename, "w") as f:
+            json.dump(dsl_clip, f, indent=2)
+        print(f"✓ Exported {filename}")
 
 # Run the workflow
 if __name__ == "__main__":
-    result = asyncio.run(complete_workflow())
+    asyncio.run(rapid_iteration_workflow())
 ```
 
 ## Data Models
@@ -263,6 +391,26 @@ class ClipDSLResponse(BaseModel):
 ```python
 class DSLProjectModel(BaseModel):
     project: Dict[str, Any]             # Complete DSL project structure
+```
+
+### NLToSMLRequest
+```python
+class NLToSMLRequest(BaseModel):
+    text: str                           # Natural language prompt
+```
+
+### NLToSMLResponse
+```python
+class NLToSMLResponse(BaseModel):
+    sml: Dict[str, Any]                 # SML-style clip dict
+```
+
+### PlaybackConfig
+```python
+class PlaybackConfig(BaseModel):
+    sf2_path: Optional[str] = None      # Path to SoundFont file
+    bpm: int = 120                      # Tempo in beats per minute
+    loop: bool = False                  # Whether to loop playback
 ```
 
 ## DSL Clip Format

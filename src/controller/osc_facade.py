@@ -8,6 +8,8 @@ from src.dsl.sml_ast import clip_from_smil_dict, composition_from_smil_dict
 from src.services.midi_export import composition_db_dict_to_midi_bytes
 from src.services.clip_service import ClipService
 from src.services.composition_service import CompositionService
+from src.graphs.clip_graph import clip_graph
+from src.services.player.midi_player import play_clip
 
 
 class NLToSMLRequest(BaseModel):
@@ -89,8 +91,64 @@ class OSCFacade:
         self.clip_service = ClipService()
         self.composition_service = CompositionService()
     
-    async def natural_language_to_sml(self, request: NLToSMLRequest) -> NLToSMLResponse:
-        raise NotImplementedError
+    async def natural_language_clip_to_sml(self, request: NLToSMLRequest) -> NLToSMLResponse:
+        """
+        Convert natural language prompt to SML clip format using LangGraph.
+        
+        This proxies to the clip_graph LangGraph implementation which:
+        1. Calls OpenAI with structured function calling
+        2. Generates SML-style clip JSON
+        3. Returns the SML clip (without storing to DB)
+        
+        Args:
+            request: NLToSMLRequest with text prompt
+            
+        Returns:
+            NLToSMLResponse with SML clip dict
+            
+        Raises:
+            ValueError: If graph execution fails or returns error
+        """
+        from src.graphs.clip_graph import ClipGenerationState
+        
+        # Initialize graph state with prompt
+        state: ClipGenerationState = {"prompt": request.text}
+        
+        # Run the graph (only the generate_sml_clip node, not storage)
+        # We'll invoke just the generation node directly
+        from src.graphs.clip_graph import generate_sml_clip
+        result = await generate_sml_clip(state)
+        
+        # Check for errors
+        if result.get("error"):
+            raise ValueError(f"LangGraph clip generation failed: {result['error']}")
+        
+        sml_clip = result.get("sml_clip")
+        if not sml_clip:
+            raise ValueError("No SML clip generated")
+        
+        return NLToSMLResponse(sml=sml_clip)
+
+    async def natural_language_composition_to_sml(self, request: NLToSMLRequest) -> NLToSMLResponse:
+        """
+        Convert natural language prompt to SML composition format using LangGraph.
+        
+        Note: Composition graph not yet implemented. This is a placeholder.
+        
+        Args:
+            request: NLToSMLRequest with text prompt
+            
+        Returns:
+            NLToSMLResponse with SML composition dict
+            
+        Raises:
+            NotImplementedError: Composition graph not yet available
+        """
+        raise NotImplementedError(
+            "Composition graph not yet implemented. "
+            "Use natural_language_clip_to_sml() for clip generation, "
+            "or create a composition graph similar to clip_graph.py"
+        )
 
     def sml_to_dsl_clip(self, sml_clip: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -211,6 +269,36 @@ class OSCFacade:
             clip_ids=clip_ids,
             composition_name=composition.name
         )
+
+    async def natural_language_clip_to_db(self, request: NLToSMLRequest) -> int:
+        """
+        Complete pipeline: Natural Language → SML → DSL → Database.
+        
+        This is a convenience method that combines:
+        1. natural_language_clip_to_sml() - NL → SML via LangGraph
+        2. sml_to_dsl_clip() - SML → DSL via sml_ast
+        3. clip_service.create_clip_from_dsl() - DSL → DB
+        
+        Args:
+            request: NLToSMLRequest with natural language prompt
+            
+        Returns:
+            clip_id of the created clip
+            
+        Example:
+            request = NLToSMLRequest(text="Create a C major scale, quarter notes")
+            clip_id = await facade.natural_language_clip_to_db(request)
+        """
+        # Step 1: NL → SML
+        sml_response = await self.natural_language_clip_to_sml(request)
+        
+        # Step 2: SML → DSL
+        dsl_clip = self.sml_to_dsl_clip(sml_response.sml)
+        
+        # Step 3: DSL → DB
+        clip_id = await self.clip_service.create_clip_from_dsl(dsl_clip)
+        
+        return clip_id
 
     async def search_clips(self, request: ClipSearchRequest) -> ClipDSLResponse:
         """
@@ -399,8 +487,104 @@ class OSCFacade:
 
         return MidiExportResult(midi_bytes=midi_bytes, output_path=output_path)
 
+    async def play_clip_from_sml(self, sml_clip: Dict[str, Any], config: PlaybackConfig) -> None:
+        """
+        Play a clip directly from SML format without storing to database.
+        
+        This is the workflow for preview/testing before deciding to store.
+        
+        Pipeline:
+        1. Convert SML → DSL (via sml_ast.clip_from_smil_dict)
+        2. Play DSL clip (via midi_player.play_clip)
+        
+        Args:
+            sml_clip: SML-style clip dict with structure:
+                {
+                    "clip_id": int (optional),
+                    "name": str,
+                    "track_name": str (optional),
+                    "bars": [
+                        {
+                            "bar_index": int,
+                            "items": [
+                                {"note": "C4", "duration": "quarter"},
+                                {"rest": "quarter"}
+                            ],
+                            "expression": {...} (optional)
+                        }
+                    ]
+                }
+            config: PlaybackConfig with sf2_path, bpm, loop settings
+            
+        Example:
+            sml_clip = {"name": "test", "bars": [...]}
+            config = PlaybackConfig(bpm=120, loop=False)
+            await facade.play_clip_from_sml(sml_clip, config)
+        """
+        # Step 1: Convert SML → DSL
+        dsl_clip = self.sml_to_dsl_clip(sml_clip)
+        
+        # Step 2: Play DSL clip using midi_player
+        play_clip(
+            clip_data=dsl_clip,
+            sf2_path=config.sf2_path,
+            bpm=config.bpm,
+            loop=config.loop
+        )
+    
+    async def play_clip_from_nl(self, request: NLToSMLRequest, config: PlaybackConfig) -> NLToSMLResponse:
+        """
+        Complete workflow: Natural Language → SML → DSL → Play.
+        
+        This is the main workflow for rapid iteration:
+        1. Generate SML from natural language (via LangGraph)
+        2. Play the clip immediately (without storing to DB)
+        3. Return the SML so you can store it later if you like it
+        
+        Args:
+            request: NLToSMLRequest with natural language prompt
+            config: PlaybackConfig with sf2_path, bpm, loop settings
+            
+        Returns:
+            NLToSMLResponse with the generated SML clip
+            
+        Example:
+            request = NLToSMLRequest(text="Create a jazzy bass line in F")
+            config = PlaybackConfig(bpm=120, loop=False)
+            sml_response = await facade.play_clip_from_nl(request, config)
+            
+            # If you like it, store it:
+            clip_id = await facade.clip_service.create_clip_from_dsl(
+                facade.sml_to_dsl_clip(sml_response.sml)
+            )
+        """
+        # Step 1: NL → SML
+        sml_response = await self.natural_language_clip_to_sml(request)
+        
+        # Step 2: Play SML (converts to DSL internally)
+        await self.play_clip_from_sml(sml_response.sml, config)
+        
+        # Step 3: Return SML for optional storage
+        return sml_response
+    
     async def play_clip(self, clip_id: int, config: PlaybackConfig) -> None:
-        raise NotImplementedError
+        """
+        Play a clip from the database by ID.
+        
+        Args:
+            clip_id: Database ID of the clip
+            config: PlaybackConfig with sf2_path, bpm, loop settings
+        """
+        # Retrieve clip from DB as DSL
+        dsl_clip = await self.clip_to_dsl(clip_id)
+        
+        # Play using midi_player
+        play_clip(
+            clip_data=dsl_clip,
+            sf2_path=config.sf2_path,
+            bpm=config.bpm,
+            loop=config.loop
+        )
 
     async def play_composition(self, composition_id: int, config: PlaybackConfig) -> None:
         raise NotImplementedError
