@@ -2,7 +2,11 @@ import fluidsynth
 import json
 import os
 from time import sleep
-from midi_clip_player import MidiClipPlayer  # assuming you saved the class above
+
+from src.services.player.midi_builder import MidiClipPlayer
+
+
+#from midi_clip_player import MidiClipPlayer  # assuming you saved the class above
 
 
 def play_clip(clip_data, sf2_path=None, bpm=120, loop=False):
@@ -13,7 +17,9 @@ def play_clip(clip_data, sf2_path=None, bpm=120, loop=False):
     sf2_path: path to .sf2 SoundFont file; defaults to FluidR3 GM if None
     bpm: tempo
     loop: whether to loop the clip
-    """
+    test = fluidsynth.__file__"""
+
+    test = fluidsynth.__file__
     # Default SoundFont path
     if sf2_path is None:
         sf2_path = "FluidR3_GM.sf2"  # adjust this path to wherever your SF2 is
@@ -31,7 +37,7 @@ def play_clip(clip_data, sf2_path=None, bpm=120, loop=False):
         player = MidiClipPlayer(fluidsynth=fs, bpm=bpm, loop=loop)
         player.play_dsl_clip(clip_data)
     finally:
-        # Cleanup
+        # Cleanup/Users/chrislomeli/Source/PycharmProjects/OSC/src/services/player
         fs.delete()
 
 
@@ -55,4 +61,4 @@ if __name__ == "__main__":
     clip_data = json.loads(clip_json)
 
     # Play the clip
-    play_clip(clip_data, sf2_path="FluidR3_GM.sf2", bpm=120, loop=False)
+    play_clip(clip_data, sf2_path="/Users/chrislomeli/Source/__DATA__/FluidR3_GM.sf2", bpm=120, loop=False)
