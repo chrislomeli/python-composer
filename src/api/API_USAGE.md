@@ -13,7 +13,7 @@ export OPENAI_API_KEY="your-key"
 export DATABASE_URL="postgresql+asyncpg://user:pass@localhost/osc"
 
 # Run the server
-uvicorn src.api.app_with_facade:app --reload --port 8000
+uvicorn src.api.app:app --reload --port 8000
 
 # Access interactive docs
 open http://localhost:8000/docs

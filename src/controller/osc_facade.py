@@ -1,79 +1,78 @@
-from typing import Any, Dict, Optional, List
 import json
+from typing import Any, Dict
 
-from pydantic import BaseModel, Field
-
+from src.controller.osc_models import NLToSMLRequest, NLToSMLResponse, DSLLoadConfig, DSLLoadResult, ClipSearchRequest, \
+    ClipDSLResponse, DSLProjectModel, MidiExportOptions, MidiExportResult, PlaybackConfig
 from src.dsl.dsl_parser import DSLParser
 from src.dsl.sml_ast import clip_from_smil_dict, composition_from_smil_dict
-from src.services.midi_export import composition_db_dict_to_midi_bytes
 from src.services.clip_service import ClipService
 from src.services.composition_service import CompositionService
-from src.graphs.clip_graph import clip_graph
+from src.services.midi_export import composition_db_dict_to_midi_bytes
 from src.services.player.midi_player import play_clip
 
 
-class NLToSMLRequest(BaseModel):
-    text: str
-
-
-class NLToSMLResponse(BaseModel):
-    sml: Dict[str, Any]
-
-
-class DSLLoadConfig(BaseModel):
-    """Configuration for loading DSL into database."""
-    path: Optional[str] = None
-    dsl_json: Optional[Dict[str, Any]] = None
-
-
-class DSLLoadResult(BaseModel):
-    """Result of loading DSL into database."""
-    composition_id: int
-    clip_ids: List[int] = Field(default_factory=list)
-    composition_name: str
-
-
-class ClipSearchRequest(BaseModel):
-    """Request for searching clips."""
-    tags: Optional[List[str]] = None
-    name_pattern: Optional[str] = None
-
-
-class ClipDSLResponse(BaseModel):
-    """Response containing clip(s) in DSL format."""
-    clips: List[Dict[str, Any]]
-
-
-class DSLProjectModel(BaseModel):
-    project: Dict[str, Any]
-
-
-class MidiExportOptions(BaseModel):
-    """Options controlling how DSL is rendered to MIDI.
-
-    If output_path is provided, the implementation should write a .mid file there.
-    Regardless, in-memory MIDI bytes should be returned in the result object.
-    """
-
-    output_path: Optional[str] = None
-    include_all_tracks: bool = True
-
-
-class MidiExportResult(BaseModel):
-    """Result of rendering DSL/DB data to MIDI.
-
-    midi_bytes contains the raw MIDI file bytes. output_path is set if the
-    implementation wrote a file to disk.
-    """
-
-    midi_bytes: bytes
-    output_path: Optional[str] = None
-
-
-class PlaybackConfig(BaseModel):
-    sf2_path: Optional[str] = None
-    bpm: int = 120
-    loop: bool = False
+# class NLToSMLRequest(BaseModel):
+#     text: str
+#
+#
+# class NLToSMLResponse(BaseModel):
+#     sml: Dict[str, Any]
+#
+#
+# class DSLLoadConfig(BaseModel):
+#     """Configuration for loading DSL into database."""
+#     path: Optional[str] = None
+#     dsl_json: Optional[Dict[str, Any]] = None
+#
+#
+# class DSLLoadResult(BaseModel):
+#     """Result of loading DSL into database."""
+#     composition_id: int
+#     clip_ids: List[int] = Field(default_factory=list)
+#     composition_name: str
+#
+#
+# class ClipSearchRequest(BaseModel):
+#     """Request for searching clips."""
+#     tags: Optional[List[str]] = None
+#     name_pattern: Optional[str] = None
+#
+#
+# class ClipDSLResponse(BaseModel):
+#     """Response containing clip(s) in DSL format."""
+#     clips: List[Dict[str, Any]]
+#
+#
+# class DSLProjectModel(BaseModel):
+#     project: Dict[str, Any]
+#
+#
+# class MidiExportOptions(BaseModel):
+#     """Options controlling how DSL is rendered to MIDI.
+#
+#     If output_path is provided, the implementation should write a .mid file there.
+#     Regardless, in-memory MIDI bytes should be returned in the result object.
+#     """
+#
+#     output_path: Optional[str] = None
+#     include_all_tracks: bool = True
+#
+#
+# class MidiExportResult(BaseModel):
+#     """Result of rendering DSL/DB data to MIDI.
+#
+#     midi_bytes contains the raw MIDI file bytes. output_path is set if the
+#     implementation wrote a file to disk.
+#     """
+#
+#     midi_bytes: bytes
+#     output_path: Optional[str] = None
+#
+#
+# class PlaybackConfig(BaseModel):
+#     sf2_path: Optional[str] = None
+#     bpm: int = 120
+#     loop: bool = False
 
 
 class OSCFacade:
@@ -259,10 +258,10 @@ class OSCFacade:
             clip_id = await self.clip_service.create_clip_from_dsl(clip_data)
             clip_ids.append(clip_id)
         
-        # Create composition
-        composition_id = await self.composition_service.create_composition_from_dsl(
-            db_format["composition"]
-        )
+        # Create composition (merge tracks into composition dict)
+        comp_data = db_format["composition"]
+        comp_data["tracks"] = db_format.get("tracks", [])
+        composition_id = await self.composition_service.create_composition_from_dsl(comp_data)
         
         return DSLLoadResult(
             composition_id=composition_id,

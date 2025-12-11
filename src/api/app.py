@@ -1,15 +1,48 @@
-# FastAPI app exposing SML/DSL → DB operations
+"""FastAPI app exposing SML/DSL → DB operations with OSCFacade integration.
+
+This is the unified API for OSC operations including:
+- SML/DSL clip and composition creation
+- Natural language generation (via facade)
+- Database operations
+- MIDI export and playback
+
+To run:
+    uvicorn src.api.app:app --reload --port 8000
+
+Requirements:
+    - DATABASE_URL environment variable
+    - OPENAI_API_KEY environment variable (for NL generation)
+    - SoundFont file for playback (optional)
+"""
 
 from typing import List, Dict, Any, Optional
 
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, APIRouter
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from src.dsl.sml_ast import clip_from_smil_dict, composition_from_smil_dict
 from src.services import ClipService, CompositionService
+from src.api.facade_endpoints import router as facade_router
 
 
-app = FastAPI(title="OSC MVP API", version="0.1.0")
+app = FastAPI(
+    title="OSC API",
+    version="0.2.0",
+    description="Complete API for OSC operations including NL generation, SML/DSL conversion, and playback"
+)
+
+# Add CORS middleware for web clients
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Configure appropriately for production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Router for SML/DSL endpoints
+router = APIRouter(tags=["sml"])
 
 
 # -----------------------------
@@ -114,12 +147,39 @@ class SMLCompositionRequest(BaseModel):
 # Endpoints
 # -----------------------------
 
+@app.get("/")
+async def root():
+    """Root endpoint with API information."""
+    return {
+        "message": "OSC API",
+        "version": "0.2.0",
+        "endpoints": {
+            "sml": {
+                "clips": "/clips/from-sml, /clips/by-name, /clips/by-tag",
+                "compositions": "/compositions, /compositions/from-sml, /compositions/{id}"
+            },
+            "facade": {
+                "natural_language": "/facade/nl/clip-to-sml, /facade/nl/clip-to-db",
+                "conversion": "/facade/sml/clip-to-dsl, /facade/sml/composition-to-dsl",
+                "database": "/facade/dsl/load",
+                "search": "/facade/clips/search",
+                "export": "/facade/clips/{id}/dsl, /facade/compositions/{id}/dsl",
+                "midi": "/facade/compositions/{id}/midi",
+                "playback": "/facade/playback/sml, /facade/playback/nl, /facade/playback/clip/{id}"
+            }
+        },
+        "docs": "/docs",
+        "openapi": "/openapi.json"
+    }
+
+
 @app.get("/health")
 async def health() -> Dict[str, str]:
-    return {"status": "ok"}
+    """Health check endpoint."""
+    return {"status": "healthy"}
 
 
-@app.post("/clips/from-sml")
+@router.post("/clips/from-sml")
 async def create_clip_from_sml(
     sml_clip: SMLClipRequest,
     service: ClipService = Depends(get_clip_service),
@@ -144,7 +204,7 @@ async def create_clip_from_sml(
     return {"clip_id": clip_id, "clip": stored}
 
 
-@app.get("/clips/by-name")
+@router.get("/clips/by-name")
 async def get_clips_by_name(
     name_pattern: str,
     service: ClipService = Depends(get_clip_service),
@@ -154,7 +214,7 @@ async def get_clips_by_name(
     return await service.find_clips_by_name(name_pattern)
 
 
-@app.get("/clips/by-tag")
+@router.get("/clips/by-tag")
 async def get_clips_by_tag(
     tag: str,
     service: ClipService = Depends(get_clip_service),
@@ -168,7 +228,7 @@ async def get_clips_by_tag(
     return [c.model_dump() for c in clips]
 
 
-@app.post("/compositions")
+@router.post("/compositions")
 async def create_composition_from_clips(
     payload: CompositionFromClipsRequest,
     service: CompositionService = Depends(get_composition_service),
@@ -186,7 +246,7 @@ async def create_composition_from_clips(
     return {"composition_id": composition_id, "composition": stored}
 
 
-@app.post("/compositions/from-sml")
+@router.post("/compositions/from-sml")
 async def create_composition_from_sml(
     payload: SMLCompositionRequest,
     service: CompositionService = Depends(get_composition_service),
@@ -229,7 +289,7 @@ async def create_composition_from_sml(
     return {"composition_id": composition_id, "composition": stored}
 
 
-@app.get("/compositions/{composition_id}")
+@router.get("/compositions/{composition_id}")
 async def get_composition(
     composition_id: int,
     service: CompositionService = Depends(get_composition_service),
@@ -237,3 +297,13 @@ async def get_composition(
     """Fetch a composition with all tracks and track bars."""
 
     return await service.get_composition_with_tracks(composition_id)
+
+
+# Include routers
+app.include_router(router)
+app.include_router(facade_router)
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
